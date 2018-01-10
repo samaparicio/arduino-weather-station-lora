@@ -20,9 +20,9 @@ String preparePacket() {
   packet.concat("\"h\":\"");
   packet.concat(humidity);
   packet.concat("\",\"s\":\"");
-  packet.concat(WindSpeed);
+  packet.concat(windSpeed);
   packet.concat("\",\"d\":\"");
-  packet.concat(Direction);
+  packet.concat(windDirection);
   packet.concat("\"}");
 
   return packet;

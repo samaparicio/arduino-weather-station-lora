@@ -12,8 +12,7 @@
 #include <Adafruit_BME280.h> // needed for the BME280 sensor
 #include <SD.h> //needed for the SD card part of the adalogger
 #include <RTClib.h> //needed for the RTC chip in the adalogger
-
-#include <math.h>
+#include <math.h> // used by the weather vane
 
 /* what pins to use to communicate with the Lora Radio on the M0 Feather  */
 #define RFM95_CS 8 //SPI CS for radio
@@ -21,7 +20,7 @@
 #define RFM95_INT 3
 
 #define SD_CS 10 // the chip select pin that drives the SD Card SPI
-#define WindSensorPin (6) // The pin location of the anemometer sensor 
+#define WINDSENSORPIN (6) // The pin location of the anemometer sensor 
 #define Offset 0;
 
 
@@ -44,13 +43,13 @@ RTC_PCF8523 rtc;
 
 
 // Weather Vane
-volatile unsigned long Rotations; // cup rotation counter used in interrupt routine 
-volatile unsigned long ContactBounceTime; // Timer to avoid contact bounce in interrupt routine 
-float WindSpeed; // speed miles per hour 
+volatile unsigned long rotations; // cup rotation counter used in interrupt routine 
+volatile unsigned long contactBounceTime; // Timer to avoid contact bounce in interrupt routine 
+float windSpeed; // speed miles per hour 
 
-int VaneValue;// raw analog value from wind vane
-int Direction;// translated 0 - 360 direction
-int CalDirection;// converted value with offset applied
+int rawVaneReading;// raw analog value from wind vane
+int windDirection;// translated 0 - 360 direction
+int windroseDirection;// converted value with offset applied
 int LastValue;
 
 
@@ -76,9 +75,9 @@ void setup()
   initializeSerial();
   initializeLoraRadio();
   initializeBME280();
+  initializeWeatherVane();
   initializeRTC();
   initializeSDCard();
-  initializeWeatherVane();
 
 }
 

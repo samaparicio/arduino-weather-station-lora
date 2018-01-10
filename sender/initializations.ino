@@ -100,8 +100,8 @@ void initializeSDCard(void) {
 }
 
 void initializeWeatherVane(void) {
-  pinMode(WindSensorPin, INPUT);
-  attachInterrupt(digitalPinToInterrupt(WindSensorPin), isr_rotation, FALLING);
+  pinMode(WINDSENSORPIN, INPUT);
+  attachInterrupt(digitalPinToInterrupt(WINDSENSORPIN), isr_rotation, FALLING);
 
   LastValue = 1;
 

@@ -3,13 +3,13 @@ void readTheSensors() {
   pressure = bme.readPressure() / 100.0F;
   altitude = bme.readAltitude(SEALEVELPRESSURE_HPA);
   humidity = bme.readHumidity();
-  readWindSpeed();
-  readWindDirection();
+  readwindSpeed();
+  readWindwindDirection();
 }
 
-void readWindSpeed() {
+void readwindSpeed() {
 
-  Rotations = 0; // Set Rotations count to 0 ready for calculations
+  rotations = 0; // Set rotations count to 0 ready for calculations
 
   //interrupts(); // Enables interrupts
   delay (3000); // Wait 3 seconds to average
@@ -18,39 +18,39 @@ void readWindSpeed() {
   // convert to mp/h using the formula V=P(2.25/T)
   // V = P(2.25/3) = P * 0.75
 
-  WindSpeed = Rotations * 0.75;
+  windSpeed = rotations * 0.75;
 
 }
 
 // This is the function that the interrupt calls to increment the rotation count
 void isr_rotation () {
 
-  if ((millis() - ContactBounceTime) > 15 ) { // debounce the switch contact.
-    Rotations++;
-    ContactBounceTime = millis();
+  if ((millis() - contactBounceTime) > 15 ) { // debounce the switch contact.
+    rotations++;
+    contactBounceTime = millis();
   }
 
 }
 
 
-void readWindDirection() {
-  VaneValue = analogRead(A4);
-  Direction = map(VaneValue, 0, 1023, 0, 360);
-  CalDirection = Direction + Offset;
+void readWindwindDirection() {
+  rawVaneReading = analogRead(A4);
+  windDirection = map(rawVaneReading, 0, 1023, 0, 360);
+  windroseDirection = windDirection + Offset;
 
-  if (CalDirection > 360)
-    CalDirection = CalDirection - 360;
+  if (windroseDirection > 360)
+    windroseDirection = windroseDirection - 360;
 
-  if (CalDirection < 0)
-    CalDirection = CalDirection + 360;
+  if (windroseDirection < 0)
+    windroseDirection = windroseDirection + 360;
 
   // Only update the display if change greater than 2 degrees.
-  if (abs(CalDirection - LastValue) > 5)
+  if (abs(windroseDirection - LastValue) > 5)
   {
-    //Serial.print(VaneValue); Serial.print("\t\t");
-    //Serial.print(CalDirection); Serial.print("\t\t");
-    getHeading(CalDirection);
-    LastValue = CalDirection;
+    //Serial.print(rawVaneReading); Serial.print("\t\t");
+    //Serial.print(windroseDirection); Serial.print("\t\t");
+    getHeading(windroseDirection);
+    LastValue = windroseDirection;
   }
 
   delay(500);
