@@ -13,10 +13,17 @@
 #include <SD.h> //needed for the SD card part of the adalogger
 #include <RTClib.h> //needed for the RTC chip in the adalogger
 
+#include <math.h>
+
 /* what pins to use to communicate with the Lora Radio on the M0 Feather  */
 #define RFM95_CS 8 //SPI CS for radio
 #define RFM95_RST 4
 #define RFM95_INT 3
+
+#define SD_CS 10 // the chip select pin that drives the SD Card SPI
+#define WindSensorPin (6) // The pin location of the anemometer sensor 
+#define Offset 0;
+
 
 // Must match RX's freq
 #define RF95_FREQ 915.0
@@ -31,10 +38,22 @@ Adafruit_BME280 bme;
 // SD CARD LOGGING
 File logfile;
 
-#define SD_CS 10 // the chip select pin that drives the SD Card SPI
 
 // Real Time Clock
 RTC_PCF8523 rtc;
+
+
+// Weather Vane
+volatile unsigned long Rotations; // cup rotation counter used in interrupt routine 
+volatile unsigned long ContactBounceTime; // Timer to avoid contact bounce in interrupt routine 
+float WindSpeed; // speed miles per hour 
+
+int VaneValue;// raw analog value from wind vane
+int Direction;// translated 0 - 360 direction
+int CalDirection;// converted value with offset applied
+int LastValue;
+
+
 
 // VARIABLES FOR LOGGING DATA
 float temp = 0;
@@ -59,6 +78,7 @@ void setup()
   initializeBME280();
   initializeRTC();
   initializeSDCard();
+  initializeWeatherVane();
 
 }
 

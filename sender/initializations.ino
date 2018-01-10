@@ -1,5 +1,5 @@
 void initializeSerial() {
-  while (!Serial);
+  //while (!Serial);
   Serial.begin(9600);
   delay(100);
 
@@ -98,5 +98,14 @@ void initializeSDCard(void) {
   Serial.print("Logging to: ");
   Serial.println(filename);
 }
+
+void initializeWeatherVane(void) {
+  pinMode(WindSensorPin, INPUT);
+  attachInterrupt(digitalPinToInterrupt(WindSensorPin), isr_rotation, FALLING);
+
+  LastValue = 1;
+
+}
+
 
 

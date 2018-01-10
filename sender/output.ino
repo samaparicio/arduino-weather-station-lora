@@ -8,7 +8,7 @@ String preparePacket() {
 
   packet.concat("{\"d\":\"");
   packet.concat(date);
-  packet.concat("\",\"t:\"");
+  packet.concat("\",\"t\":");
   packet.concat(temp);
   packet.concat("\",");
   packet.concat("\"p\":\"");
@@ -19,6 +19,10 @@ String preparePacket() {
   packet.concat("\",");
   packet.concat("\"h\":\"");
   packet.concat(humidity);
+  packet.concat("\",\"s\":\"");
+  packet.concat(WindSpeed);
+  packet.concat("\",\"d\":\"");
+  packet.concat(Direction);
   packet.concat("\"}");
 
   return packet;
