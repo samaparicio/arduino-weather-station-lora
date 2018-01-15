@@ -1,3 +1,6 @@
+
+// sample packet
+// {"d":"2065/7/15 31:11:4","t":"23.28","p":"1024.09","a":"56.69","h":"23.23","s":"45.00","d":"280"}
 String preparePacket() {
 
   String packet = "";
@@ -8,7 +11,7 @@ String preparePacket() {
 
   packet.concat("{\"d\":\"");
   packet.concat(date);
-  packet.concat("\",\"t\":");
+  packet.concat("\",\"t\":\"");
   packet.concat(temp);
   packet.concat("\",");
   packet.concat("\"p\":\"");
@@ -21,7 +24,7 @@ String preparePacket() {
   packet.concat(humidity);
   packet.concat("\",\"s\":\"");
   packet.concat(windSpeed);
-  packet.concat("\",\"d\":\"");
+  packet.concat("\",\"di\":\"");
   packet.concat(windDirection);
   packet.concat("\"}");
 
