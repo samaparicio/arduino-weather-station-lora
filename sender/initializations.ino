@@ -1,7 +1,7 @@
 void initializeSerial() {
   //while (!Serial);
   Serial.begin(9600);
-  delay(100);
+  delay(2000);
 
 }
 
@@ -100,12 +100,15 @@ void initializeSDCard(void) {
 }
 
 void initializeWeatherVane(void) {
-  pinMode(WINDSENSORPIN, INPUT);
-  attachInterrupt(digitalPinToInterrupt(WINDSENSORPIN), isr_rotation, FALLING);
-
-  LastValue = 1;
+  pinMode(WINDSPEEDPIN, INPUT);
+  // uncommenting causes rf95 never to return from rf95.waitPacketSent();
+  attachInterrupt(digitalPinToInterrupt(WINDSPEEDPIN), windSpeedRotation, FALLING);
 
 }
 
+void initializeRainBucket() {
+  pinMode(RAINBUCKETPIN, INPUT);
+  attachInterrupt(digitalPinToInterrupt(RAINBUCKETPIN), rainBucketSwing, FALLING);
+}
 
 

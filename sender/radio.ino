@@ -31,7 +31,12 @@ void sendPacket(String thisPayload) {
   unsigned int payloadLength = thisPayload.length() + 1; //+1 is for the null terminator - https://stackoverflow.com/questions/7383606/converting-an-int-or-string-to-a-char-array-on-arduino
   char payloadAsChar[payloadLength];
   thisPayload.toCharArray(payloadAsChar, payloadLength);
+
+  Serial.println("About to send");
   rf95.send((uint8_t *)payloadAsChar, payloadLength);
+  Serial.println("coming back from send");
   delay(10);
+  
   rf95.waitPacketSent();
+  Serial.println("reached past waitpacketsend");
 }

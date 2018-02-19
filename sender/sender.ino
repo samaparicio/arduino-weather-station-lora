@@ -14,21 +14,21 @@
 #include <RTClib.h> //needed for the RTC chip in the adalogger
 #include <math.h> // used by the weather vane
 
-/* what pins to use to communicate with the Lora Radio on the M0 Feather  */
+// Lora Radio on the M0 Feather
 #define RFM95_CS 8 //SPI CS for radio
 #define RFM95_RST 4
 #define RFM95_INT 3
+#define RF95_FREQ 915.0 // Must match RX's freq
+RH_RF95 rf95(RFM95_CS, RFM95_INT); // Singleton instance of the radio driver
 
-#define SD_CS 10 // the chip select pin that drives the SD Card SPI
-#define WINDSENSORPIN (6) // The pin location of the anemometer sensor 
-#define Offset 0;
-
-
-// Must match RX's freq
-#define RF95_FREQ 915.0
-
-// Singleton instance of the radio driver
-RH_RF95 rf95(RFM95_CS, RFM95_INT);
+// WIND AND RAIN SENSORS
+// for interrupts on M0, safe choices are A1 to A4 based on this https://github.com/arduino/ArduinoCore-samd/issues/136#issuecomment-232248144
+// at some point I used "6" instead of A1 and it didn't work. A2 didn't work either messed with radio.
+#define WINDSPEEDPIN (A1) // The pin location of the anemometer sensor 
+#define RAINBUCKETPIN (A3) // The pin location of the rain bucket
+#define WINDDIRECTIONPIN (A4) // The pin location of the weather vane
+int rawWindDirection; // translated 0 - 360 direction
+#define rawWindDirectionOffset 0; // if the weather vane needs to be calibrated for 'true north'
 
 // BME 280
 Adafruit_BME280 bme;
@@ -36,29 +36,32 @@ Adafruit_BME280 bme;
 
 // SD CARD LOGGING
 File logfile;
-
+#define SD_CS 10 // the chip select pin that drives the SD Card SPI
 
 // Real Time Clock
 RTC_PCF8523 rtc;
 
-
 // Weather Vane
 volatile unsigned long rotations; // cup rotation counter used in interrupt routine 
 volatile unsigned long contactBounceTime; // Timer to avoid contact bounce in interrupt routine 
-float windSpeed; // speed miles per hour 
+int rawVaneReading; // raw voltage value from wind vane
 
-int rawVaneReading;// raw analog value from wind vane
-int windDirection;// translated 0 - 360 direction
-int windroseDirection;// converted value with offset applied
-int LastValue;
-
+// Rain Bucket
+const int minimumInterval = 500; //minimum interval between bucket swings. Debounces the switch
+volatile unsigned long lastTimeBucketSwung = millis();
 
 
-// VARIABLES FOR LOGGING DATA
+// VARIABLES FOR LOGGING SENSOR DATA
 float temp = 0;
 float pressure = 0;
 float altitude = 0;
 float humidity = 0;
+float windSpeed = 0.0; // speed miles per hour 
+int windDirection = 0; // 0 to 359 degrees
+String windHeading = "N"; // N, NW, SE, etc
+double rainPrecipitationRate = 0.0; // mm/hr of rainfall between rain bucket swings
+
+
 
 /*float busvoltage1 = 0;
 float current_mA1 = 0;
@@ -78,7 +81,7 @@ void setup()
   initializeWeatherVane();
   initializeRTC();
   initializeSDCard();
-
+  initializeRainBucket();
 }
 
 
@@ -87,9 +90,11 @@ void loop()
   readTheSensors();
   payload = preparePacket();
   logThings(payload);
+  Serial.println("Sending packet");
   sendPacket(payload);
+  Serial.println("Waiting for receiver");
   waitForAckFromReceiver();
-  delay(1000);
+  delay(20000);
 }
 
 

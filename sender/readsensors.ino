@@ -4,7 +4,7 @@ void readTheSensors() {
   altitude = bme.readAltitude(SEALEVELPRESSURE_HPA);
   humidity = bme.readHumidity();
   readwindSpeed();
-  readWindwindDirection();
+  readWindDirection();
 }
 
 void readwindSpeed() {
@@ -22,60 +22,80 @@ void readwindSpeed() {
 
 }
 
-// This is the function that the interrupt calls to increment the rotation count
-void isr_rotation () {
-
+/* ISR that is called when the wind speed sensor activates. Increments the rotation count */
+void windSpeedRotation () {
   if ((millis() - contactBounceTime) > 15 ) { // debounce the switch contact.
     rotations++;
     contactBounceTime = millis();
   }
+    Serial.println("wind speed ISR");
 
 }
 
 
-void readWindwindDirection() {
-  rawVaneReading = analogRead(A4);
-  windDirection = map(rawVaneReading, 0, 1023, 0, 360);
-  windroseDirection = windDirection + Offset;
+void readWindDirection() {
+  //read a voltage from the anemometer sensor line and convert it to a direction
+  rawVaneReading = analogRead(WINDDIRECTIONPIN);
+  rawWindDirection = map(rawVaneReading, 0, 1023, 0, 360);
+  windDirection = rawWindDirection + rawWindDirectionOffset;
 
-  if (windroseDirection > 360)
-    windroseDirection = windroseDirection - 360;
+  if (windDirection > 360)
+    windDirection = windDirection - 360;
 
-  if (windroseDirection < 0)
-    windroseDirection = windroseDirection + 360;
+  if (windDirection < 0)
+    windDirection = windDirection + 360;
 
-  // Only update the display if change greater than 2 degrees.
-  if (abs(windroseDirection - LastValue) > 5)
-  {
-    //Serial.print(rawVaneReading); Serial.print("\t\t");
-    //Serial.print(windroseDirection); Serial.print("\t\t");
-    getHeading(windroseDirection);
-    LastValue = windroseDirection;
-  }
+  windHeading = getHeading(windDirection);
 
+  //TODO is this really necessary?
   delay(500);
 }
 
 // Converts compass direction to heading
-void getHeading(int direction) {
+String getHeading(int direction) {
   if (direction < 22)
-    Serial.println("N");
+    return "N";
   else if (direction < 67)
-    Serial.println("NE");
+    return  "NE";
   else if (direction < 112)
-    Serial.println("E");
+    return "E";
   else if (direction < 157)
-    Serial.println("SE");
+    return "SE";
   else if (direction < 212)
-    Serial.println("S");
+    return "S";
   else if (direction < 247)
-    Serial.println("SW");
+    return "SW";
   else if (direction < 292)
-    Serial.println("W");
+    return "W";
   else if (direction < 337)
-    Serial.println("NW");
+    return "NW";
   else
-    Serial.println("N");
+    return "N";
 }
 
+/* ISR triggered by swings of the rain bucket because it is full */
+void rainBucketSwing() {
+  noInterrupts();
+  unsigned long currentTime = millis();
+
+  //debounce
+  if ((currentTime - lastTimeBucketSwung) < minimumInterval) {
+    interrupts();
+    return;
+  }
+
+  unsigned long intervalBetweenBucketSwings = currentTime - lastTimeBucketSwung;
+
+  //update the last time it swung to now, for next interrupt
+  lastTimeBucketSwung = currentTime;
+
+
+  //here would go the code to calculate the rainfall
+  // https://github.com/CurtisIreland/solinst-array/blob/master/Arduino/RainCounter/RainCounter.ino
+
+  rainPrecipitationRate = 914400.0 / intervalBetweenBucketSwings;
+  Serial.println("rain bucket swung");
+
+  interrupts();
+}
 

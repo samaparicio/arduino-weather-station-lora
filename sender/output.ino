@@ -1,6 +1,16 @@
+/* Sample packet
+    {"d":"2065/7/15 31:11:4","t":"23.28","p":"1024.09","a":"56.69","h":"23.23","s":"45.00","di":"280", "wh":"N", "r":"2.3"}
+    d = date
+    t = temperature
+    p = pressure
+    a = altitude
+    h = humidity
+    s = wind speed
+    di = wind direction
+    wh = wind heading
+    r = rain precipitation
+*/
 
-// sample packet
-// {"d":"2065/7/15 31:11:4","t":"23.28","p":"1024.09","a":"56.69","h":"23.23","s":"45.00","d":"280"}
 String preparePacket() {
 
   String packet = "";
@@ -26,6 +36,10 @@ String preparePacket() {
   packet.concat(windSpeed);
   packet.concat("\",\"di\":\"");
   packet.concat(windDirection);
+  packet.concat("\",\"wh\":\"");
+  packet.concat(windHeading);
+  packet.concat("\",\"r\":\"");
+  packet.concat(rainPrecipitationRate);
   packet.concat("\"}");
 
   return packet;

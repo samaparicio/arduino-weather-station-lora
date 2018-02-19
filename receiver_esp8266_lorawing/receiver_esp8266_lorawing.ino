@@ -73,6 +73,13 @@ Adafruit_MQTT_Publish wdirfeed = Adafruit_MQTT_Publish(&mqtt, WDIR_FEED);
 const char PRECI_FEED[]  = AIO_USERNAME "/feeds/weather.precipitation";
 Adafruit_MQTT_Publish precifeed = Adafruit_MQTT_Publish(&mqtt, PRECI_FEED);
 
+const char WHEAD_FEED[] = AIO_USERNAME "/feeds/weather.wind-heading";
+Adafruit_MQTT_Publish wheadfeed = Adafruit_MQTT_Publish(&mqtt, WHEAD_FEED);
+
+const char ALTI_FEED[] = AIO_USERNAME "/feeds/weather.altitude";
+Adafruit_MQTT_Publish altifeed = Adafruit_MQTT_Publish(&mqtt, ALTI_FEED);
+
+
 
 // Counter to help keep Adafruit IO connection alive
 uint32_t connectCounter = 0;
@@ -104,22 +111,50 @@ void loop()
       Serial.println(rf95.lastRssi(), DEC);
       delay(10);
 
-      StaticJsonBuffer<200> jsonBuffer;
+      /*
+         Sample packet:
+         {"d":"2065/5/13 19:16:6","t":"23.99","p":"1018.82","a":"100.17","h":"30.93","s":"0.00","di":"118","wh":"SE","r":"32.07"}
+         Use https://arduinojson.org/assistant/ to size up
+             d = date
+             t = temperature
+             p = pressure
+             a = altitude
+             h = humidity
+             s = wind speed
+             di = wind direction
+             wh = wind heading
+             r = rain precipitation
+      */
 
-      JsonObject& json = jsonBuffer.parseObject((const char *) buf);
+      /*StaticJsonBuffer<235> jsonBuffer;
 
-      if (!json.success()) {
+        JsonObject& json = jsonBuffer.parseObject((const char *) buf);
+
+        if (!json.success()) {
         Serial.println("json parse failed");
         return;
-      }
+        }
 
-      const char* d = json["d"]; // "2065/7/15 31:11:4"
-      const char* t = json["t"]; // "23.28"
-      const char* p = json["p"]; // "1024.09"
-      const char* a = json["a"]; // "56.69"
-      const char* h = json["h"]; // "23.23"
-      const char* s = json["s"]; // "45.00"
-      const char* di = json["di"]; // "45.00"
+      */
+
+      const size_t bufferSize = JSON_OBJECT_SIZE(9) + 100;
+      DynamicJsonBuffer jsonBuffer(bufferSize);
+
+      //const char* json = "{\"d\":\"2065/5/13 19:33:2\",\"t\":\"24.10\",\"p\":\"1018.83\",\"a\":\"100.04\",\"h\":\"30.85\",\"s\":\"0.00\",\"di\":\"137\",\"wh\":\"SE\",\"r\":\"32.07\"}";
+
+      JsonObject& root = jsonBuffer.parseObject((const char *) buf);
+
+
+
+      const char* d = root["d"]; // "2065/7/15 31:11:4"
+      const char* t = root["t"]; // "23.28"
+      const char* p = root["p"]; // "1024.09"
+      const char* a = root["a"]; // "56.69"
+      const char* h = root["h"]; // "23.23"
+      const char* s = root["s"]; // "45.00"
+      const char* di = root["di"]; // "45.00"
+      const char* wh = root["wh"]; // "SE"
+      const char* r = root["r"]; // "32.07"
 
       bool publishResults = true;
 
@@ -140,6 +175,18 @@ void loop()
       delay(10);
 
       if (!wdirfeed.publish(di))
+        publishResults = false;
+      delay(10);
+
+      if (!wheadfeed.publish(wh))
+        publishResults = false;
+      delay(10);
+
+      if (!precifeed.publish(r))
+        publishResults = false;
+      delay(10);
+
+      if (!altifeed.publish(p))
         publishResults = false;
       delay(10);
 
